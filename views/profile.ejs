@@ -1,0 +1,227 @@
+<!-- views/profile.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	    <meta name="description" content="nice 2 meet profile">
+	    <meta name="author" content="Ridvan Bekir">
+	    <link rel="icon" href="/static/image/meet_me_round.png">
+
+	    <title>Nice2Meet: Profile</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link rel="stylesheet" href="https://v4-alpha.getbootstrap.com/dist/css/bootstrap.min.css">
+	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> 
+	    <!-- load bootstrap css -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+
+	    <!-- Custom styles for this template -->
+	    <link href="/static/css/styles.css" rel="stylesheet">
+	</head>
+	<body>
+		<div class="container">
+
+			<div class="header clearfix">
+		        <nav>
+		          <ul class="nav nav-pills float-right">
+		            <li class="nav-item">
+		              <a class="nav-link" href="/">Home</a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link active" href="#">Profile <span class="sr-only">(current)</span></a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link" href="#">About</a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link" href="#">Contact</a>
+		            </li>
+		          </ul>
+		        </nav>
+		        <h3 class="text-muted">Nice2Meet</h3>
+		    </div>
+
+			<div class="page-header text-center">
+				<h1><span class="fa fa-anchor"></span> Profile Page</h1>
+				<a href="/logout" class="btn btn-default btn-sm">Logout</a>
+			</div>
+
+			<div class="row">
+
+				<!-- LOCAL INFORMATION -->
+				<div class="col-sm-6">
+					<div class="well well-custom">
+						<h3><span class="fa fa-user"></span> Local Login</h3>
+
+							<p>
+								<strong>email</strong>: <%= user.local.email %><br>
+								<strong>password: </strong>********
+							</p>
+
+					</div>
+				</div>
+
+				<!-- FACEBOOK INFORMATION -->
+		        <div class="col-sm-6">
+		            <div class="well well-custom">
+		                <h3 class="text-primary"><span class="fa fa-facebook"></span> Facebook</h3>
+
+		                <!-- check if the user has this token (is the user authenticated with this social account) -->
+		                <% if (user.facebook.token) { %>
+		                    <p>
+		                        <strong>email</strong>: <%= user.facebook.email %><br>
+		                        <strong>name</strong>: <%= user.facebook.name %><br>
+		                    </p>
+
+		                    <a href="/unlink/facebook" class="btn btn-primary">Unlink</a>
+		                <% } else { %>
+		                    <a href="/connect/facebook" class="btn btn-primary">Connect Facebook</a>
+		                <% } %>
+
+		            </div>
+		        </div>
+			</div>
+			
+			<div class="row">
+
+		        <!-- TWITTER INFORMATION -->
+		        <div class="col-sm-6">
+		            <div class="well well-custom">
+		                <h3 class="text-info"><span class="fa fa-twitter"></span> Twitter</h3>
+
+		                <!-- check if the user has this token (is the user authenticated with this social account) -->
+		                <% if (user.twitter.token) { %>
+		                    <p>
+		                        <strong>display name</strong>: <%= user.twitter.displayName %><br>
+		                        <strong>username</strong>: <%= user.twitter.username %>
+		                    </p>
+
+		                    <a href="/unlink/twitter" class="btn btn-info">Unlink</a>
+		                <% } else { %>
+		                    <a href="/connect/twitter" class="btn btn-info">Connect Twitter</a>
+		                <% } %>
+
+		            </div>
+		        </div>
+
+		        <!-- GOOGLE INFORMATION -->
+		        <div class="col-sm-6">
+		            <div class="well well-custom">
+		                <h3 class="text-danger"><span class="fa fa-google-plus"></span> Google+</h3>
+
+		                <!-- check if the user has this token (is the user authenticated with this social account) -->
+		                <% if (user.google.token) { %>
+		                    <p>
+		                        <strong>email</strong>: <%= user.google.email %><br>
+		                        <strong>name</strong>: <%= user.google.name %>
+		                    </p>
+
+		                    <a href="/unlink/google" class="btn btn-danger">Unlink</a>
+		                <% } else { %>
+		                    <a href="/connect/google" class="btn btn-danger">Connect Google</a>
+		                <% } %>
+
+		            </div>
+		        </div>
+		    </div>
+			
+			<div class="row">
+				<!-- PROFILE FORM -->
+				<div class="col-sm-12">
+					<div class="well">
+						<h3 style="text-align: center; padding-bottom: 30px; font-family: cursive;">PROFILE INFORMATION</h3>
+							<form action="/profile/editprofile" method="post">
+								<div class="left">
+									<div class="form-group">
+										<label style="width: 100%; text-align: center">Profile Image</label>
+										<img id="profile-image" class="img-rounded" width="90%" style="margin: 0 auto; display: inherit;" <% if ('image' in profile && profile.image !== null && profile.image !== undefined) {%> src="<%= profile.image %>" <% } %>>
+										<input id="img-upload" type="file" accept="image/*" style="width: 90%; position: relative; left: 5%; margin: 20px 0">
+										<input id="img-base" type="hidden" name="image" value="">
+									</div>
+								</div>
+								<div class="right">
+									<p style="text-decoration: underline;">* Fields that will be written to the tag</p>
+									
+									<div class="form-group">
+										<label style="width: 100%;">* Gender:</label>
+										<input type="radio" name="gender" value="0" <% if ('gender' in profile && profile.gender === 0) {%> checked="checked" <% } %>><span>Female</span></input>
+										<input type="radio" name="gender" value="1" <% if ('gender' in profile && profile.gender === 1) {%> checked="checked" <% } %>><span>Male</span></input>
+									</div>
+									
+									<div class="form-group">
+										<label>* Name:</label>
+										<input type="text" class="form-control" name="name" <% if ('name' in profile && profile.name !== null && profile.name !== undefined) {%> value="<%= profile.name %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>* Birthdate:</label>
+										<input type="date" class="form-control" name="birthDate" <% if ('birthDate' in profile && profile.birthDate !== null && profile.birthDate !== undefined) {%> value="<%= profile.birthDate %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>* Phone:</label>
+										<input type="text" class="form-control" name="phone" <% if ('phone' in profile && profile.phone !== null && profile.phone !== undefined) {%> value="<%= profile.phone %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>* Email:</label>
+										<input type="text" class="form-control" name="email" <% if ('email' in profile && profile.email !== null && profile.email !== undefined) {%> value="<%= profile.email %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>Education:</label>
+										<input type="text" class="form-control" name="education" <% if ('education' in profile && profile.education !== null && profile.education !== undefined) {%> value="<%= profile.education %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>Graduated From:</label>
+										<input type="text" class="form-control" name="graduatedFrom" <% if ('graduatedFrom' in profile && profile.graduatedFrom !== null && profile.graduatedFrom !== undefined) {%> value="<%= profile.graduatedFrom %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>Profession:</label>
+										<input type="text" class="form-control" name="profession" <% if ('profession' in profile && profile.profession !== null && profile.profession !== undefined) {%> value="<%= profile.profession %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>Work At:</label>
+										<input type="text" class="form-control" name="workplace" <% if ('workplace' in profile && profile.workplace !== null && profile.workplace !== undefined) {%> value="<%=profile.workplace%>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>From:</label>
+										<input type="text" class="form-control" name="from" <% if ('from' in profile && profile.from !== null && profile.from !== undefined) {%> value="<%= profile.from %>" <% } %>>
+									</div>
+									<div class="form-group">
+										<label>Live in:</label>
+										<input type="text" class="form-control" name="livesIn" <% if ('livesIn' in profile && profile.livesIn !== null && profile.livesIn !== undefined) {%> value="<%= profile.livesIn %>" <% } %>>
+									</div>
+								</div>
+								
+								<% if (Object.keys(profile).length === 0) { %>
+									<p class="text-center">
+										Please be aware that after clicking on "Save" button for the first time a tag request will be made and our support team will contact you by the information you provide.
+									</p>
+								<% } %>
+
+								<button type="submit" class="btn btn-warning btn-lg" style="margin: 0 auto; display: inherit; width: 30%; margin-top: 20px;">Save</button>
+							</form>
+					</div>
+				</div>
+			</div>
+			<p>&copy; MeetMe 2017</p>
+		</div>
+		<footer>
+			<script>
+				function readFile() {
+		  
+				  if (this.files && this.files[0]) {
+					var FR= new FileReader();
+					
+					FR.addEventListener("load", function(e) {
+					  document.getElementById("profile-image").src 	= e.target.result;
+					  document.getElementById("img-base").value 	= e.target.result;
+					}); 
+					
+					FR.readAsDataURL( this.files[0] );
+				  }
+				}
+
+				document.getElementById("img-upload").addEventListener("change", readFile);
+			</script>
+		</footer>
+	</body>
+</html>

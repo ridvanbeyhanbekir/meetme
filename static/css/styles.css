@@ -1,0 +1,174 @@
+/* Space out content a bit */
+body {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background-color: #ffc966;
+}
+
+/* Everything but the jumbotron gets side spacing for mobile first views */
+.header,
+.marketing,
+.footer {
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+/* Custom page header */
+.header {
+  padding-bottom: 1rem;
+  border-bottom: .05rem solid #FF8C00;
+}
+/* Make the masthead heading the same height as the navigation */
+.header h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 40px;
+}
+
+.page-header {
+  border-color: #FF8C00;
+}
+
+hr {
+  color: #FF8C00;
+  border-color: #FF8C00;
+}
+
+.header .nav-pills .nav-link.active {
+	background-color: #FF8C00;
+}
+
+/* Navigation custom styles */
+.nav-item .nav-link:hover {
+    background-color: #FFA94F;
+    border-radius: .25rem;
+}
+
+/* Custom button styles */
+.btn-success {
+	background-color: #FFA94F;
+	border-color: #FFA94F;
+}
+
+.btn-success:hover {
+	background-color: #FF8C00;
+	border-color: #FF8C00;
+}
+
+/* Custom page footer */
+.footer {
+  padding-top: 1.5rem;
+  color: #777;
+  border-top: .05rem solid #FF8C00;
+}
+
+/* Customize container */
+@media (min-width: 48em) {
+  .container {
+    max-width: 850px;
+  }
+}
+.container-narrow > hr {
+  margin: 2rem 0;
+}
+
+.container .form-container {
+  display: inline-block;
+  width: 100%;
+}
+
+.container .row .well-custom {
+  text-align: center;
+}
+
+.container .row .well .left {
+    float: left;
+}
+
+.container .row .well .left,
+.container .row .well .right {
+    width: 50%;
+    display: inline-block;
+}
+
+.container .row .well .right .form-group input[type="radio"] {
+  margin-top: 0;
+}
+
+.container .row .well .right .form-group input[type="radio"]:not(:first-of-type) {
+  margin-left: 20px;
+}
+
+.container .row .well .right .form-group span {
+  margin-left: 10px;
+}
+
+.container .row .well .right .form-group input[type="radio"],
+.container .row .well .right .form-group span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+  text-align: center;
+  border-bottom: .05rem solid #e5e5e5;
+  background-color: ghostwhite;
+}
+.jumbotron .btn {
+  padding: .75rem 1.5rem;
+  font-size: 1.5rem;
+}
+
+.jumbotron p {
+  margin: 20px 0 0;
+}
+
+/* Supporting marketing content */
+.marketing {
+  margin: 3rem 0;
+}
+.marketing p + h4 {
+  margin-top: 1.5rem;
+}
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 762px) {
+  /* Remove the padding we set earlier */
+  .header,
+  .marketing,
+  .footer {
+    padding-right: 0;
+    padding-left: 0;
+  }
+  /* Space out the masthead */
+  .header {
+    margin-bottom: 2rem;
+  }
+  /* Remove the bottom border on the jumbotron for visual effect */
+  .jumbotron {
+    border-bottom: 0;
+  }
+}
+
+/* Responsive: Portrait mobile*/
+@media screen and (max-width: 762px) {
+	.header h3{
+		text-align: center;
+    margin-top: 10px;
+	}
+
+  .header nav {
+    text-align: center;
+  }
+	
+	.header .nav-pills {
+		float: none !important;
+    display: inline-block;
+	}
+
+  .container .row .well .left,
+  .container .row .well .right {
+      width: 100%;
+  }
+}
