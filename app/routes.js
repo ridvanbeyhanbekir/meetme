@@ -1,9 +1,12 @@
 // app/routes.js
-var Profile			= require('../app/models/profile');
-var appCredentials 	= require('../config/applicationcredentials');
-var moment 			= require('moment');
-var profileFields 	= ['gender', 'name', 'birthDate', 'phone', 'email', 'image', 'education', 'graduatedFrom', 'profession', 'workplace', 'from', 'livesIn'];
-
+var Profile				= require('../app/models/profile');
+var appCredentials 		= require('../config/applicationcredentials');
+var moment 				= require('moment');
+var profileFields 		= ['gender', 'name', 'birthDate', 'phone', 'email', 'image', 'education', 'graduatedFrom', 'profession', 'workplace', 'from', 'livesIn'];
+var profileFieldRegex	= {
+	email: "^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$",
+	phone: "^[0-9\-\+]{9,15}$"
+};
 module.exports = function(app, passport) {
 
 // Social account login/logout actions
@@ -218,8 +221,6 @@ module.exports = function(app, passport) {
 		var currentUser = req.user,
 			currentProfile = {},
 			requestBody = req.body;
-
-			console.log(requestBody);
 			
 		Profile.findOne({ '_linkedTo' :  currentUser._id }, function(err, profile) {
 			// if there are any errors, return the error
@@ -230,10 +231,14 @@ module.exports = function(app, passport) {
             if (profile) {
 				// Iterate through the profile fields and set the passed ones only				
 				profileFields.forEach(function (profileField) {
-					if (profileField in requestBody && requestBody[profileField] !== '') {
+					if (profileField in requestBody && requestBody[profileField].trim() !== '') {
 						if (profileField === "birthDate") {
 							profile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
 						} else {
+							if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
+								profile[profileField] = '';
+								return;
+							}
 							profile[profileField] = requestBody[profileField];
 						}
 					}
@@ -249,8 +254,16 @@ module.exports = function(app, passport) {
 				
 				// Iterate through the profile fields and set the profile fields				
 				profileFields.forEach(function (profileField) {
-					if (profileField in requestBody && requestBody[profileField] !== '') {
-						newProfile[profileField] = requestBody[profileField];
+					if (profileField in requestBody && requestBody[profileField].trim() !== '') {
+						if (profileField === "birthDate") {
+							newProfile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
+						} else {
+							if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
+								newProfile[profileField] = '';
+								return;
+							}
+							newProfile[profileField] = requestBody[profileField];
+						}
 					}
 				});
 				

@@ -47,6 +47,19 @@ module.exports = function(passport) {
     },
     function(req, email, password, done) {
 
+        if (email.trim() === '' || password.trim() === '') {
+            return done(null, false, req.flash('signupMessage', 'Email or password not provided'));
+        }
+
+        var emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!emailRegex.test(email)) {
+            return done(null, false, req.flash('signupMessage', 'Invalid email address.'));
+        }
+
+        if (password.length < 6) {
+            return done(null, false, req.flash('signupMessage', 'Please provide more secure password.'));
+        }
+
 		// find a user whose email is the same as the forms email
 		// we are checking to see if the user trying to login already exists
         User.findOne({ 'local.email' :  email }, function(err, user) {
