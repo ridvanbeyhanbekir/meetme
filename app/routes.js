@@ -2,6 +2,8 @@
 var Profile				= require('../app/models/profile');
 var appCredentials 		= require('../config/applicationcredentials');
 var moment 				= require('moment');
+var fs 					= require("fs");
+
 var profileFields 		= ['gender', 'name', 'birthDate', 'phone', 'email', 'image', 'education', 'graduatedFrom', 'profession', 'workplace', 'from', 'livesIn'];
 var profileFieldRegex	= {
 	email: "^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$",
@@ -227,6 +229,11 @@ module.exports = function(app, passport) {
             if (err)
                 return console.log(err);
 
+			// read binary data
+		    var bitmap = fs.readFileSync(req.files.file.path);
+		    // convert binary data to base64 encoded string
+		    var uploadedImage = new Buffer(bitmap).toString('base64');
+
             // check if there is already defined profile for that user
             if (profile) {
 				// Iterate through the profile fields and set the passed ones only				
@@ -243,6 +250,10 @@ module.exports = function(app, passport) {
 						}
 					}
 				});
+
+				if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
+					profile['image'] = 'data:image/png;base64,' + uploadedImage;
+				}
 				
 				profile.save(function (err) {
 					if (err) {
@@ -266,6 +277,10 @@ module.exports = function(app, passport) {
 						}
 					}
 				});
+
+				if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
+					profile['image'] = 'data:image/png;base64,' + uploadedImage;
+				}
 				
 				// Link the user to the profile
 				newProfile['_linkedTo'] = currentUser._id;
@@ -277,8 +292,13 @@ module.exports = function(app, passport) {
 					}
 				});
             }
-			
-			res.redirect('/profile');
+
+            //Delete the locally saved file
+            fs.unlink(req.files.file.path);
+
+			res.render('updatesuccess.ejs', {
+				req : req
+			});
 		});
 	});
 	

@@ -131,13 +131,12 @@
 				<div class="col-sm-12">
 					<div class="well">
 						<h3 style="text-align: center; padding-bottom: 30px; font-family: cursive;">PROFILE INFORMATION</h3>
-							<form action="/profile/editprofile" method="post">
+							<form action="/profile/editprofile" method="post" enctype="multipart/form-data">
 								<div class="left">
 									<div class="form-group">
 										<label style="width: 100%; text-align: center">Profile Image</label>
 										<img id="profile-image" class="img-rounded" width="90%" style="margin: 0 auto; display: inherit;" <% if ('image' in profile && profile.image !== null && profile.image !== undefined) {%> src="<%= profile.image %>" <% } %>>
-										<input id="img-upload" type="file" accept="image/*" style="width: 90%; position: relative; left: 5%; margin: 20px 0">
-										<input id="img-base" type="hidden" name="image" value="">
+										<input id="img-upload" name="file" type="file" accept="image/*" style="width: 90%; position: relative; left: 5%; margin: 20px 0">
 									</div>
 								</div>
 								<div class="right">
@@ -213,7 +212,6 @@
 					
 					FR.addEventListener("load", function(e) {
 					  document.getElementById("profile-image").src 	= e.target.result;
-					  document.getElementById("img-base").value 	= e.target.result;
 					}); 
 					
 					FR.readAsDataURL( this.files[0] );
