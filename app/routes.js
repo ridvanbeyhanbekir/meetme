@@ -216,6 +216,23 @@ module.exports = function(app, passport) {
 		});
 	});
 
+	function calculateImageDimensions(width,height,maxWidth,maxHeight){
+	    // calculate the width and height, constraining the proportions
+	    if (width > height) {
+	        if (width > maxWidth) {
+	            height = Math.round(height *= maxWidth / width);
+	            width = maxWidth;
+	        }
+	    }
+	    else {
+	        if (height > maxHeight) {
+	            width = Math.round(width *= maxHeight / height);
+	            height = maxHeight;
+	        }
+	    }
+	    return {width:width,height:height};
+	}
+
 	function readImageFileFromRequest (req, newPath, convertedPath) {
 		return new Promise(function(resolve,reject){
 
@@ -227,18 +244,9 @@ module.exports = function(app, passport) {
 		    	}
 
 		    	var imageByteLength = data.byteLength;
-		    	var imageMbCoef = Math.round(imageByteLength / 10000000);
-		    	var qualityPercentage = 100;
-		    	var maxImageBytes = 200000;
+		    	var maxImageBytes = 2000000;
 
-
-		    	if (imageByteLength > maxImageBytes) {
-		    		qualityPercentage = (maxImageBytes / imageByteLength) * 100;
-
-		    		if (imageMbCoef > 1) qualityPercentage = qualityPercentage / imageMbCoef;
-		    	}
-
-		    	if (imageByteLength < 2000000) { // Check if image is more that 2 MB
+		    	if (imageByteLength < maxImageBytes) { // Check if image is more that 2 MB
 		    		if(newPath !== null && newPath !== '' && convertedPath !== null && convertedPath !== '') {
 				      fs.writeFile(newPath, data, function (err) {
 				      	if (err) {
@@ -246,11 +254,12 @@ module.exports = function(app, passport) {
 				      		return true;
 				      	} 
 
-				      	var dimensions = sizeOf(newPath);
+				      	var originalDimensions = sizeOf(newPath);
+				      	var convertedDimensions = calculateImageDimensions(originalDimensions.width, originalDimensions.height, 1280, 1280);//Get proportionate dimensions
 						Jimp.read(newPath, function (err, image) {
 						    if (err) throw err;
-						    image.resize(dimensions.width, dimensions.height)      // resize 
-						         .quality(Math.round(qualityPercentage))          // set JPEG quality 
+						    image.resize(convertedDimensions.width, convertedDimensions.height)      			// resize 
+						         .quality(15)
 						         .write(convertedPath, function () {
 						         	resolve();
 						         }); // save 
