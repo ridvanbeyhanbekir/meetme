@@ -3,6 +3,9 @@ var Profile				= require('../app/models/profile');
 var appCredentials 		= require('../config/applicationcredentials');
 var moment 				= require('moment');
 var fs 					= require("fs");
+var Jimp 				= require("jimp");
+var sizeOf				= require('image-size');
+
 
 var profileFields 		= ['gender', 'name', 'birthDate', 'phone', 'email', 'image', 'education', 'graduatedFrom', 'profession', 'workplace', 'from', 'livesIn'];
 var profileFieldRegex	= {
@@ -212,6 +215,54 @@ module.exports = function(app, passport) {
 			}
 		});
 	});
+
+	function readImageFileFromRequest (req, newPath, convertedPath) {
+		return new Promise(function(resolve,reject){
+
+	        fs.readFile(req.files.file.path, function (err, data) {
+		    	if (err) {
+		    		console.log(err);
+		    		resolve();
+		    		return true;
+		    	}
+
+		    	var imageByteLength = data.byteLength;
+		    	var imageMbCoef = Math.round(imageByteLength / 10000000);
+		    	var qualityPercentage = 100;
+		    	var maxImageBytes = 200000;
+
+
+		    	if (imageByteLength > maxImageBytes) {
+		    		qualityPercentage = (maxImageBytes / imageByteLength) * 100;
+
+		    		if (imageMbCoef > 1) qualityPercentage = qualityPercentage / imageMbCoef;
+		    	}
+
+		    	if (imageByteLength < 2000000) { // Check if image is more that 2 MB
+		    		if(newPath !== null && newPath !== '' && convertedPath !== null && convertedPath !== '') {
+				      fs.writeFile(newPath, data, function (err) {
+				      	if (err) {
+				      		console.log(err);
+				      		return true;
+				      	} 
+
+				      	var dimensions = sizeOf(newPath);
+						Jimp.read(newPath, function (err, image) {
+						    if (err) throw err;
+						    image.resize(dimensions.width, dimensions.height)      // resize 
+						         .quality(Math.round(qualityPercentage))          // set JPEG quality 
+						         .write(convertedPath, function () {
+						         	resolve();
+						         }); // save 
+						});
+				      });
+				    }
+		    	} else {
+		    		resolve();
+		    	}
+			});
+	    });
+	}
 	
 	// =====================================
 	// ADD PROFILE POST REQUEST =========================
@@ -223,82 +274,95 @@ module.exports = function(app, passport) {
 		var currentUser = req.user,
 			currentProfile = {},
 			requestBody = req.body;
+
+		var imageName = req.files.file.name;
+        var newPath = __dirname + "\\uploads\\original\\" + imageName;
+		var convertedPath = __dirname + "\\uploads\\converted\\" + imageName;
 			
 		Profile.findOne({ '_linkedTo' :  currentUser._id }, function(err, profile) {
 			// if there are any errors, return the error
             if (err)
                 return console.log(err);
 
-			// read binary data
-		    var bitmap = fs.readFileSync(req.files.file.path);
-		    // convert binary data to base64 encoded string
-		    var uploadedImage = new Buffer(bitmap).toString('base64');
+            
+            readImageFileFromRequest(req, newPath, convertedPath).then(function () {
+            	// convert binary data to base64 encoded string
+            	var uploadedImage = '';
 
-            // check if there is already defined profile for that user
-            if (profile) {
-				// Iterate through the profile fields and set the passed ones only				
-				profileFields.forEach(function (profileField) {
-					if (profileField in requestBody && requestBody[profileField].trim() !== '') {
-						if (profileField === "birthDate") {
-							profile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
-						} else {
-							if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
-								profile[profileField] = '';
-								return;
+            	if (fs.existsSync(convertedPath)) {
+            		var buffer = fs.readFileSync(convertedPath);
+
+			    	uploadedImage = new Buffer(buffer).toString('base64');
+			    }
+
+	            // check if there is already defined profile for that user
+	            if (profile) {
+					// Iterate through the profile fields and set the passed ones only				
+					profileFields.forEach(function (profileField) {
+						if (profileField in requestBody && requestBody[profileField].trim() !== '') {
+							if (profileField === "birthDate") {
+								profile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
+							} else {
+								if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
+									profile[profileField] = '';
+									return;
+								}
+								profile[profileField] = requestBody[profileField];
 							}
-							profile[profileField] = requestBody[profileField];
 						}
-					}
-				});
+					});
 
-				if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
-					profile['image'] = 'data:image/png;base64,' + uploadedImage;
-				}
-				
-				profile.save(function (err) {
-					if (err) {
-						console.log(err);
+					if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
+						profile['image'] = 'data:image/png;base64,' + uploadedImage;
 					}
-				});
-            } else {
-				var newProfile = new Profile(); // Create new profile instance
-				
-				// Iterate through the profile fields and set the profile fields				
-				profileFields.forEach(function (profileField) {
-					if (profileField in requestBody && requestBody[profileField].trim() !== '') {
-						if (profileField === "birthDate") {
-							newProfile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
-						} else {
-							if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
-								newProfile[profileField] = '';
-								return;
+					
+					profile.save(function (err) {
+						if (err) {
+							console.log(err);
+						}
+					});
+	            } else {
+					var newProfile = new Profile(); // Create new profile instance
+					
+					// Iterate through the profile fields and set the profile fields				
+					profileFields.forEach(function (profileField) {
+						if (profileField in requestBody && requestBody[profileField].trim() !== '') {
+							if (profileField === "birthDate") {
+								newProfile[profileField] = moment(requestBody[profileField]).format("YYYY-MM-DD");
+							} else {
+								if (profileField in profileFieldRegex && !(new RegExp(profileFieldRegex[profileField]).test(requestBody[profileField]))) {
+									newProfile[profileField] = '';
+									return;
+								}
+								newProfile[profileField] = requestBody[profileField];
 							}
-							newProfile[profileField] = requestBody[profileField];
 						}
+					});
+
+					if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
+						profile['image'] = 'data:image/png;base64,' + uploadedImage;
 					}
+					
+					// Link the user to the profile
+					newProfile['_linkedTo'] = currentUser._id;
+					newProfile['tagID'] = ['not_available'];
+			  
+					newProfile.save(function (err) {
+						if (err) {
+							console.log(err);
+						}
+					});
+	            }
+
+	            //Delete the locally saved files
+	            if (fs.existsSync(req.files.file.path)) fs.unlink(req.files.file.path);
+	            if (fs.existsSync(newPath)) fs.unlink(newPath);
+	           	if (fs.existsSync(convertedPath)) fs.unlink(convertedPath);
+
+				res.render('updatesuccess.ejs', {
+					req : req
 				});
-
-				if (typeof(uploadedImage) !== 'undefined' && uploadedImage !== '') {
-					profile['image'] = 'data:image/png;base64,' + uploadedImage;
-				}
-				
-				// Link the user to the profile
-				newProfile['_linkedTo'] = currentUser._id;
-				newProfile['tagID'] = ['not_available'];
-		  
-				newProfile.save(function (err) {
-					if (err) {
-						console.log(err);
-					}
-				});
-            }
-
-            //Delete the locally saved file
-            fs.unlink(req.files.file.path);
-
-			res.render('updatesuccess.ejs', {
-				req : req
-			});
+            });
 		});
 	});
 	
