@@ -1,52 +1,16 @@
 <!-- views/index.ejs -->
+<% 
+    var headTitleInfo = 'Homepage';
+    var navigationActiveLink = 'home';
+%>
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="nice 2 meet">
-    <meta name="author" content="Ridvan Bekir">
-    <link rel="icon" href="/static/image/meet_me_round.png">
-
-    <title>Nice2Meet: Homepage</title>
-
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://v4-alpha.getbootstrap.com/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
-	  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-
-    <!-- Custom styles for this template -->
-    <link href="/static/css/styles.css" rel="stylesheet">
-  </head>
+  <%- include includes/head_UI %>
 
   <body>
-
     <div class="container">
-      <div class="header clearfix">
-        <nav>
-          <ul class="nav nav-pills float-right">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/profile">
-              <% if (req.isAuthenticated()) { %> 
-                  Profile
-              <% } else { %>
-                  Account
-              <% } %>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
-            </li>
-          </ul>
-        </nav>
-        <h3 class="text-muted">Nice2Meet</h3>
-      </div>
+            
+      <%- include includes/header %>
 
       <div class="jumbotron text-center">
         <h3 class="display-3">Welcome to Nice2Meet</h3>
@@ -58,8 +22,8 @@
         <% if (req.isAuthenticated()) { %>
           <a href="/profile" class="btn btn-default"><span class="fa fa-user"></span>  Go to Profile</a>
         <% } else { %>
-          <a href="/login" class="btn btn-default"><span class="fa fa-user"></span>  Login</a>
-          <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span>  Signup</a>
+          <a href="/login" class="btn btn-default"><span class="fa fa-user"></span>  Log In</a>
+          <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span>  Sign Up</a>
 
           <p>Or login with one click only:</p>
           <a href="/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
@@ -93,7 +57,7 @@
       </div>
 
       <footer class="footer">
-        <p>&copy; MeetMe 2017</p>
+        <p>&copy; MeetMe 2018</p>
       </footer>
 
     </div> <!-- /container -->

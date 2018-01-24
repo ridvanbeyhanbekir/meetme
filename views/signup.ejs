@@ -1,46 +1,16 @@
 <!-- views/signup.ejs -->
+<% 
+    var headTitleInfo = 'Sign Up';
+    var navigationActiveLink = 'profile';
+%>
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-	    <meta charset="utf-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	    <meta name="description" content="nice 2 meet sign up">
-	    <meta name="author" content="Ridvan Bekir">
-	    <link rel="icon" href="/static/image/meet_me_round.png">
+  <%- include includes/head_UI %>
 
-	    <title>Nice2Meet: Sign Up</title>
-
-	    <!-- Bootstrap core CSS -->
-	    <link rel="stylesheet" href="https://v4-alpha.getbootstrap.com/dist/css/bootstrap.min.css">
-	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> 
-	    <!-- load bootstrap css -->
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-
-	    <!-- Custom styles for this template -->
-	    <link href="/static/css/styles.css" rel="stylesheet">
-	</head>
-	<body>
-		<div class="container">
-
-			<div class="header clearfix">
-		        <nav>
-		          <ul class="nav nav-pills float-right">
-		            <li class="nav-item">
-		              <a class="nav-link" href="/">Home</a>
-		            </li>
-		            <li class="nav-item">
-		              <a class="nav-link active" href="#">Account <span class="sr-only">(current)</span></a>
-		            </li>
-		            <li class="nav-item">
-		              <a class="nav-link" href="#">About</a>
-		            </li>
-		            <li class="nav-item">
-		              <a class="nav-link" href="#">Contact</a>
-		            </li>
-		          </ul>
-		        </nav>
-		        <h3 class="text-muted">Nice2Meet</h3>
-		    </div>
+  <body>
+    <div class="container">
+            
+      <%- include includes/header %>
 
 		    <div class="form-container">
 				<div class="col-sm-6 col-sm-offset-3">
@@ -58,12 +28,18 @@
 							<label>Email</label>
 							<input type="text" class="form-control" name="email">
 						</div>
+
 						<div class="form-group">
 							<label>Password</label>
 							<input type="password" class="form-control" name="password">
 						</div>
 
-						<button type="submit" class="btn btn-warning btn-lg">Signup</button>
+						<div class="form-group">
+							<label>Confirm Password</label>
+							<input type="password" class="form-control" name="passwordConfirm">
+						</div>
+
+						<button type="submit" class="btn btn-warning btn-lg">Sign Up</button>
 					</form>
 
 					<hr>

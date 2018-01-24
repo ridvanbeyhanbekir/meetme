@@ -1,17 +1,27 @@
 // app/routes.js
+
+// Models
 var Profile				= require('../app/models/profile');
+var Location			= require('../app/models/location');
+var Publication			= require('../app/models/publication');
+
+// Config/credentials
 var appCredentials 		= require('../config/applicationcredentials');
+
+// Libraries
 var moment 				= require('moment');
 var fs 					= require("fs");
-var Jimp 				= require("jimp");
-var sizeOf				= require('image-size');
+var util				= require('./util');
+var where 				= require('node-where');
 
-
+// Local params
 var profileFields 		= ['gender', 'name', 'birthDate', 'phone', 'email', 'image', 'education', 'graduatedFrom', 'profession', 'workplace', 'from', 'livesIn'];
 var profileFieldRegex	= {
 	email: "^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$",
 	phone: "^[0-9\-\+]{9,15}$"
 };
+
+
 module.exports = function(app, passport) {
 
 // Social account login/logout actions
@@ -164,7 +174,10 @@ module.exports = function(app, passport) {
 	app.get('/login', isNotLoggedIn , function(req, res) {
 
 		// render the page and pass in any flash data if it exists
-		res.render('login.ejs', { message: req.flash('loginMessage') });
+		res.render('login.ejs', { 
+			req: req,
+			message: req.flash('loginMessage') 
+		});
 	});
 
 	// process the login form
@@ -181,11 +194,14 @@ module.exports = function(app, passport) {
 	app.get('/signup', isNotLoggedIn, function(req, res) {
 
 		// render the page and pass in any flash data if it exists
-		res.render('signup.ejs', { message: req.flash('signupMessage') });
+		res.render('signup.ejs', { 
+			req: req,
+			message: req.flash('signupMessage') 
+		});
 	});
 
 	// process the signup form
-	app.post('/signup', passport.authenticate('local-signup', {
+	app.post('/signup', util.checkSubmittedPasswords, passport.authenticate('local-signup', {
 		successRedirect : '/profile', // redirect to the secure profile section
 		failureRedirect : '/signup', // redirect back to the signup page if there is an error
 		failureFlash : true // allow flash messages
@@ -202,76 +218,15 @@ module.exports = function(app, passport) {
 		var currentProfile = {};
 		Profile.findOne({ '_linkedTo' :  currentUser._id }, function (err, profile) {
 			if (err) console.log(err);
-			if (profile) {
-				res.render('profile.ejs', {
-					user : currentUser,	// get the user out of session and pass to template
-					profile : profile
-				});
-			} else {
-				res.render('profile.ejs', {
-					user : currentUser,	// get the user out of session and pass to template
-					profile : {}
-				});
-			}
+			profile = profile || {};
+
+			res.render('profile.ejs', {
+				req: req,
+				user: currentUser,	// get the user out of session and pass to template
+				profile: profile
+			});
 		});
 	});
-
-	function calculateImageDimensions(width,height,maxWidth,maxHeight){
-	    // calculate the width and height, constraining the proportions
-	    if (width > height) {
-	        if (width > maxWidth) {
-	            height = Math.round(height *= maxWidth / width);
-	            width = maxWidth;
-	        }
-	    }
-	    else {
-	        if (height > maxHeight) {
-	            width = Math.round(width *= maxHeight / height);
-	            height = maxHeight;
-	        }
-	    }
-	    return {width:width,height:height};
-	}
-
-	function readImageFileFromRequest (req, newPath, convertedPath) {
-		return new Promise(function(resolve,reject){
-
-	        fs.readFile(req.files.file.path, function (err, data) {
-		    	if (err) {
-		    		console.log(err);
-		    		resolve();
-		    		return true;
-		    	}
-
-		    	var imageByteLength = data.byteLength;
-		    	var maxImageBytes = 2000000;
-
-		    	if (imageByteLength < maxImageBytes) { // Check if image is more that 2 MB
-		    		if(newPath !== null && newPath !== '' && convertedPath !== null && convertedPath !== '') {
-				      fs.writeFile(newPath, data, function (err) {
-				      	if (err) {
-				      		console.log(err);
-				      		return true;
-				      	} 
-
-				      	var originalDimensions = sizeOf(newPath);
-				      	var convertedDimensions = calculateImageDimensions(originalDimensions.width, originalDimensions.height, 1280, 1280);//Get proportionate dimensions
-						Jimp.read(newPath, function (err, image) {
-						    if (err) throw err;
-						    image.resize(convertedDimensions.width, convertedDimensions.height)      			// resize 
-						         .quality(15)
-						         .write(convertedPath, function () {
-						         	resolve();
-						         }); // save 
-						});
-				      });
-				    }
-		    	} else {
-		    		resolve();
-		    	}
-			});
-	    });
-	}
 	
 	// =====================================
 	// ADD PROFILE POST REQUEST =========================
@@ -294,11 +249,11 @@ module.exports = function(app, passport) {
                 return console.log(err);
 
             
-            readImageFileFromRequest(req, newPath, convertedPath).then(function () {
+            util.readImageFileFromRequest(req, newPath, convertedPath, imageName).then(function () {
             	// convert binary data to base64 encoded string
             	var uploadedImage = '';
 
-            	if (fs.existsSync(convertedPath)) {
+            	if (imageName && imageName !== null && imageName !== null && fs.existsSync(convertedPath)) {
             		var buffer = fs.readFileSync(convertedPath);
 
 			    	uploadedImage = new Buffer(buffer).toString('base64');
@@ -363,10 +318,12 @@ module.exports = function(app, passport) {
 					});
 	            }
 
-	            //Delete the locally saved files
-	            if (fs.existsSync(req.files.file.path)) fs.unlink(req.files.file.path);
-	            if (fs.existsSync(newPath)) fs.unlink(newPath);
-	           	if (fs.existsSync(convertedPath)) fs.unlink(convertedPath);
+	            if (imageName && imageName !== null && imageName !== null) {
+	            	//Delete the locally saved files
+		            if (fs.existsSync(req.files.file.path)) fs.unlink(req.files.file.path);
+		            if (fs.existsSync(newPath)) fs.unlink(newPath);
+		           	if (fs.existsSync(convertedPath)) fs.unlink(convertedPath);
+	            }
 
 				res.render('updatesuccess.ejs', {
 					req : req
@@ -423,9 +380,152 @@ module.exports = function(app, passport) {
 		req.logout();
 		res.redirect('/');
 	});
+
+	app.post('/visits/submit', isLoggedIn, function (req, res) {
+		var requestBody = req.body;
+		var currentUser = req.user;
+
+		Profile.findOne({ '_linkedTo' :  currentUser._id }, function (err, profile) {
+			if (err) console.log(err);
+
+			if (profile) {
+				var newPublication = new Publication(); // Create new publication instance
+				newPublication['_linkedTo'] = profile._id;
+				newPublication['date'] = moment().format();
+				newPublication['text'] = 'publicationText' in requestBody ? requestBody['publicationText'] : '';
+
+				//Create new or get existing location instance
+				var locationId = '';
+				Location.findOne({'placeId' : requestBody['locationId']}, function (err, location) {
+					if (err) console.log(err);
+
+					var currentLocation = {}
+					if (location) {
+						currentLocation = location;
+					} else {
+						var newLocation = new Location();
+						Object.keys(requestBody).forEach(function (requestBodyKey) {
+							switch (requestBodyKey) {
+								case 'locationId': newLocation['placeId'] = requestBody[requestBodyKey]; break;
+								case 'locationName': newLocation['name'] = requestBody[requestBodyKey]; break;
+								case 'locationAddress': newLocation['address'] = requestBody[requestBodyKey]; break;
+								case 'locationLat': newLocation['latitute'] = requestBody[requestBodyKey]; break;
+								case 'locationLng': newLocation['longitude'] = requestBody[requestBodyKey]; break;
+								default: break;
+							}
+						});
+
+						newLocation.save(function (err) {
+							if (err) {
+								console.log(err);
+							}
+						});
+
+						currentLocation = newLocation;
+					}
+
+					newPublication['locationId'] = '_id' in currentLocation ? currentLocation._id : '';
+					newPublication.save(function (err) {
+						if (err) {
+							console.log(err);
+						}
+					});
+				});
+			}
+		});
+
+		res.redirect('/visits');
+	});
+
+	function getVisitedPlacesInfo(locationId, currentPublication, profileVisitsArray) {
+		return new Promise(function (resolve, reject) {
+			Location.findOne({'_id' : locationId}, function (err, location) {
+				if (err) {
+					console.log(err);
+					reject(err);
+				}
+
+				if (location) {
+					profileVisitsArray.push({
+						date: 'date' in currentPublication ? currentPublication.date : new Date(),
+						address: 'address' in location ? location.address : '',
+						name: 'name' in location ? location.name : '',
+						publicationText: 'text' in currentPublication ? currentPublication.text : ''
+					});
+				}
+				resolve(profileVisitsArray);
+			});
+		});
+	}
+
+	app.get('/visits', isLoggedIn, function (req, res) {
+
+		var currentUser = req.user;
+		var profileVisitsArray = new Array();
+		var currentProfile = {};
+		var publicationsArray = new Array();
+
+		Profile.findOne({ '_linkedTo' :  currentUser._id }, function (err, profile) {
+			if (err) console.log(err);
+
+			if (profile) currentProfile = profile;
+		}).then(function () {
+			return new Promise(function (resolve, reject) {
+				Publication.find({ '_linkedTo' : currentProfile._id }, function (err, publications) {
+					if (err) {
+						console.log(err);
+						reject(err);
+					}
+					publicationsArray = Object.keys(publications).map(function(key) { return publications[key] });
+					resolve(publicationsArray);
+				});
+			});
+		}).then(function () {
+			var promises = new Array();
+			var publicationsLength = publicationsArray.length;
+			var index = 0;
+			for (index; index < publicationsLength; index++) {
+				var currentPublication = publicationsArray[index];
+				var locationId = 'locationId' in currentPublication ? currentPublication.locationId : '';
+
+				if (locationId !== '') {
+					promises.push(getVisitedPlacesInfo (locationId, currentPublication, profileVisitsArray));
+				}
+			}
+
+			return Promise.all(promises);
+
+		}).then(function () {
+			//Location params
+			var locationObject = {
+				lat: 42.698334,
+				lng: 23.319941
+			};
+
+			var ip = req.connection.remoteAddress || 
+	        		req.socket.remoteAddress || 
+	        		req.connection.socket.remoteAddress;
+
+			// get current user location
+			where.is(ip, function (err, result) {
+				if (result) {
+					locationObject.lat = result.get('lat');
+					locationObject.lng = result.get('lng');
+				}
+			});
+
+			res.render('visits.ejs', {
+				req: req,
+				user: currentUser,
+				profile: currentProfile,
+				profileVisitsArray: profileVisitsArray,
+				locationInfo: locationObject
+			});
+		});
+	});
 };
 
-// route middleware to make sure
+// route middleware to make sure user is authenticated
 function isNotLoggedIn (req, res, next) {
 	// if user is not authenticated in the session, carry on
 	if (!req.isAuthenticated())
@@ -435,7 +535,7 @@ function isNotLoggedIn (req, res, next) {
 	res.redirect('/profile');
 }
 
-// route middleware to make sure
+// route middleware to make sure user is authenticated
 function isLoggedIn(req, res, next) {
 
 	// if user is authenticated in the session, carry on

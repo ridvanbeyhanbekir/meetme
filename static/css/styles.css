@@ -172,3 +172,74 @@ hr {
       width: 100%;
   }
 }
+
+/********** Visit Page Styles ************/
+.visits-wrapper h2 {
+  letter-spacing: 2px;
+}
+
+.visits-wrapper .map-container {
+  transition: all .5s ease;
+}
+
+.place-search-form {
+  display: block;
+  width: 100%;
+}
+
+.place-search-form .place-search-input,
+.place-search-form .input-button-separator,
+.place-search-form .place-search-button {
+  display: inline-block;
+}
+
+.place-search-form .place-search-input {
+  width: 80%;
+}
+
+.place-search-form .input-button-separator {
+  width: 10%;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.place-search-form .place-search-button {
+  width: 19%;
+}
+
+.place-search-form .place-search-button input {
+  width: 100%;
+}
+
+.stores-map {
+    height: 349px;
+    width: 100%;
+}
+
+input[name="publicationText"] {
+  height: 75px;
+}
+
+.publication {
+  width: 100%;
+  border: 1px solid #FF8C00;
+  padding: 10px 20px;
+}
+
+.publication:not(:last-of-type) {
+  margin-bottom: 10px;
+}
+
+.publication .publication-text {
+  white-space: normal;
+  text-align: justify;
+  text-align-last: center;
+}
+
+/* Responsive: Portrait mobile*/
+@media screen and (max-width: 762px) {
+  .place-search-form .place-search-input,
+  .place-search-form .place-search-button {
+    width: 100%;
+  }
+}
