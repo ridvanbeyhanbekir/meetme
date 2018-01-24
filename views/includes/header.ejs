@@ -1,0 +1,41 @@
+<%
+  var navigationElements = [
+    {
+      elementType: 'home',
+      elementText: 'Home',
+      href: '/'
+    },
+    {
+      elementType: 'profile',
+      elementText: req.isAuthenticated() ? 'Profile' : 'Log In',
+      href: '/profile'
+    },
+    {
+      elementType: 'visits',
+      elementText: 'My Visits',
+      href: '/visits'
+    },
+    {
+      elementType: 'contactus',
+      elementText: 'Contact Us',
+      href: '#'
+    }
+  ];
+%>
+
+<div class="header clearfix">
+    <nav>
+      <ul class="nav nav-pills float-right">
+
+        <% navigationElements.forEach(function (element) { %>
+          <li class="nav-item">
+            <a class="nav-link <% if (element.elementType === navigationActiveLink) { %>active<% } %>" 
+              href="<% if (element.elementType === navigationActiveLink) { %>#<% } else { %> <%=element.href%> <% } %> "> 
+              <%= element.elementText %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </nav>
+    <h3 class="text-muted">Nice2Meet</h3>
+</div>

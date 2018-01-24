@@ -1,0 +1,123 @@
+<!-- views/index.ejs -->
+<% 
+    var isResultsFound = profileVisitsArray.length > 0; 
+    var headTitleInfo = 'Visits';
+    var navigationActiveLink = 'visits';
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+    <%- include includes/head_UI %>
+
+    <body>
+        <div class="container visits-wrapper">
+            
+            <%- include includes/header %>
+
+            <div class="page-header text-center">
+                <h1><span class="fa fa-location-arrow"></span> My Places</h1>
+                <a href="#">
+                    <span class="map-show <% if(!isResultsFound) { %> hide <% } %>">Show Map</span>
+                    <span class="map-hide <% if(isResultsFound) { %> hide <% } %>">Hide Map</span>
+                </a>
+            </div>
+
+            <div class="row">
+
+                <div class="col-sm-12 map-container <% if(isResultsFound) { %> hide <% } %>">
+                    <div class="place-search-form text-center">
+                        <h2 id="find-place-title">Find Your <br /> Place</h2>
+                        <br />
+
+                        <div class="location-sharing-blocked alert alert-danger hide">
+                          Please enable location share and try again.
+                        </div>
+
+                        <div class="form-group place-search-input">
+                            <input type="text" class="form-control" name="userAddress" placeholder="Enter place to search for..."/>
+                        </div>
+
+                        <div class="form-group place-search-button">
+                             <input type="button" class="btn btn-primary" value="Search"/>
+                        </div>
+
+                        <span class="form-group input-button-separator">or</span>
+                        <div class="form-group geolocate-button">
+                            <input type="button" class="btn btn-primary" value="Geolocate Me"/>
+                        </div>
+                    </div>
+                    
+
+                    <div class="map">
+                        <div id="map_canvas" class="stores-map">
+                        </div>
+                    </div>
+
+                    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCip8Cpx_evSkbz4cVfY4igR2ZJkX5eyso&libraries=places"
+                    async defer></script>
+
+                    <div class="page-header col-sm-12 text-center">
+                        <h2>Submit new visit</h2>
+                        <form id="new-visit-form" method="post" action="/visits/submit" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="publicationText" value="" placeholder="What is on your mind<% if ('name' in profile && profile.name !== null && profile.name !== undefined) {%> <%=profile.name %> <% } %>?" />
+                            </div>
+                            <div class="form-group">
+                                <p><b>At:</b> <a href="#find-place-title" name="publicationPlaceName" title="Click on a location from the map.">Please select a location from the map.</a></p>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="submit" class="btn btn-primary" name="submit" value="Submit"/>
+                            </div>
+
+                            <input type="hidden" name="locationId" value=""/>
+                            <input type="hidden" name="locationName" value=""/>
+                            <input type="hidden" name="locationAddress" value=""/>
+                            <input type="hidden" name="locationLat" value=""/>
+                            <input type="hidden" name="locationLng" value=""/>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="page-header col-sm-12 text-center" style="border: 2px solid">
+                    <h2>Recently Visited Places</h2>
+                    <h3>Total ( <span> <%= profileVisitsArray.length %> </span> )</h3>
+                    <% for (var index = 0; index < profileVisitsArray.length; index++) { %>
+                        <% var currentVisit = profileVisitsArray[index]; %>
+                        <div class="publication">
+                            <div class="form-group">
+                                <p class="text-center"><b>Date: </b><%= currentVisit.date %></p>
+                            </div>
+                            <% if (currentVisit.publicationText !== null && currentVisit.publicationText !== '') { %>
+                                <div class="form-group">
+                                    <textarea class="publication-text form-control" type="text" value="<%= currentVisit.publicationText %>" readonly="readonly"><%= currentVisit.publicationText %></textarea>
+                                </div>
+                            <% } %>
+                            <div class="form-group">
+                                <p class="text-center"><b>Place: </b><a href="#find-place-title" id="find-in-map" title="Find in the map"><%= currentVisit.name %></a></p>
+                                <p class="text-center"><b>Address: </b><%= currentVisit.address %></p>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+                
+
+                <p>&copy; MeetMe 2018</p>
+                <input type="hidden" id="geolocation_latitude" value="<%= locationInfo.lat %>"/>
+                <input type="hidden" id="geolocation_longitude" value="<%= locationInfo.lng %>"/>
+            </div>
+        </div>
+        
+        <footer>
+           <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+           <script src="/static/js/visits.js"></script>
+           <script type="text/javascript">
+                (function () {
+                    $(window).on('load', function () {
+                        visits.init();
+                    });
+                })();
+           </script>
+        </footer>
+    </body>
+</html>
